@@ -1,0 +1,6 @@
+{
+  "name": "Calculadora e Monitor de IMC",
+  "description": "Aplicativo móvel interativo para calcular, monitorar e registrar o IMC (Índice de Massa Corporal), com suporte a conexão simulada de bioimpedância via Bluetooth, histórico gráfico, avatares dinâmicos e notificações motivacionais.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
