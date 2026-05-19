@@ -31,9 +31,16 @@ export const HomeScreen: React.FC = () => {
     const meters = parseFloat(currentHeight) || 1.76;
     return Math.round(meters * 100);
   });
+  const [heightInput, setHeightInput] = useState<string>(() => {
+    const meters = parseFloat(currentHeight) || 1.76;
+    return Math.round(meters * 100).toString();
+  });
 
   const [weightKg, setWeightKg] = useState<number>(() => {
     return parseFloat(currentWeight) || 78.5;
+  });
+  const [weightInput, setWeightInput] = useState<string>(() => {
+    return (parseFloat(currentWeight) || 78.5).toString();
   });
 
   const [ageYears, setAgeYears] = useState<number>(() => {
@@ -59,8 +66,36 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     if (connectedDevice && scaleWeight !== null) {
       setWeightKg(scaleWeight);
+      setWeightInput(scaleWeight.toFixed(1));
     }
   }, [scaleWeight, connectedDevice]);
+
+  // Handlers for bidirectional typing and sliding syncing
+  const handleHeightInputChange = (val: string) => {
+    setHeightInput(val);
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed)) {
+      setHeightCm(parsed);
+    }
+  };
+
+  const handleHeightSliderChange = (val: number) => {
+    setHeightCm(val);
+    setHeightInput(val.toString());
+  };
+
+  const handleWeightInputChange = (val: string) => {
+    setWeightInput(val);
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed)) {
+      setWeightKg(parsed);
+    }
+  };
+
+  const handleWeightSliderChange = (val: number) => {
+    setWeightKg(val);
+    setWeightInput(val.toString());
+  };
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,10 +306,19 @@ export const HomeScreen: React.FC = () => {
         <div id="height-control" className="flex flex-col space-y-2 select-none bg-zinc-50/50 p-4 rounded-2xl border border-zinc-100">
           <div className="flex justify-between items-baseline mb-1">
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Altura Ideal</span>
-            <span className="text-zinc-800 text-lg font-black font-mono">
-              {heightCm} <span className="text-xs font-semibold text-zinc-400">cm</span>
-              <span className="text-xs font-bold text-zinc-500/80 ml-2">({(heightCm / 100).toFixed(2)} m)</span>
-            </span>
+            <div className="flex items-baseline space-x-1.5 justify-end">
+              <input
+                id="height-input"
+                type="number"
+                min="100"
+                max="250"
+                value={heightInput}
+                onChange={(e) => handleHeightInputChange(e.target.value)}
+                className="bg-zinc-100 hover:bg-zinc-200/60 focus:bg-white font-black font-mono text-zinc-800 text-sm border border-zinc-200/50 rounded-lg text-center w-16 py-1 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+              <span className="text-xs font-semibold text-zinc-400">cm</span>
+              <span className="text-xs font-semibold text-zinc-500/80 ml-2">({(heightCm / 100).toFixed(2)} m)</span>
+            </div>
           </div>
 
           <input
@@ -284,7 +328,7 @@ export const HomeScreen: React.FC = () => {
             max="225"
             step="1"
             value={heightCm}
-            onChange={(e) => setHeightCm(parseInt(e.target.value))}
+            onChange={(e) => handleHeightSliderChange(parseInt(e.target.value))}
             className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none"
           />
           <div className="flex justify-between text-[10px] font-bold text-zinc-400/90 font-mono">
@@ -305,16 +349,16 @@ export const HomeScreen: React.FC = () => {
                 <span className="bg-indigo-600/10 text-indigo-600 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase">BT Sinc</span>
               )}
             </div>
-            <div className="flex items-baseline space-x-1">
+            <div className="flex items-baseline space-x-1 justify-end">
               <input
                 id="weight-input"
                 type="number"
                 step="0.1"
                 min="30"
                 max="250"
-                value={weightKg.toFixed(1)}
-                onChange={(e) => setWeightKg(Math.max(10, parseFloat(e.target.value) || 0))}
-                className="bg-transparent font-black font-mono text-zinc-800 text-lg border-b border-transparent focus:border-indigo-500 focus:outline-none text-right w-20 py-0 leading-none h-6"
+                value={weightInput}
+                onChange={(e) => handleWeightInputChange(e.target.value)}
+                className="bg-zinc-100 hover:bg-zinc-200/60 focus:bg-white font-black font-mono text-zinc-800 text-sm border border-zinc-200/50 rounded-lg text-center w-20 py-1 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
               <span className="text-xs font-semibold text-zinc-400">kg</span>
             </div>
@@ -327,7 +371,7 @@ export const HomeScreen: React.FC = () => {
             max="180"
             step="0.5"
             value={weightKg}
-            onChange={(e) => setWeightKg(parseFloat(e.target.value))}
+            onChange={(e) => handleWeightSliderChange(parseFloat(e.target.value))}
             className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none"
             disabled={connectedDevice !== null && !scaleStabilized} // lock slider during active Bluetooth weighing
           />
